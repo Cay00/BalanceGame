@@ -37,15 +37,15 @@ class DataPanel extends StatelessWidget {
           // Dane z akcelerometru
           Text(
             'X: ${x.toStringAsFixed(2)}',
-            style: const TextStyle(fontSize: 14),
+            style: const TextStyle(fontSize: 14, color: Colors.white),
           ),
           Text(
             'Y: ${y.toStringAsFixed(2)}',
-            style: const TextStyle(fontSize: 14),
+            style: const TextStyle(fontSize: 14, color: Colors.white),
           ),
           Text(
             'Z: ${z.toStringAsFixed(2)}',
-            style: const TextStyle(fontSize: 14),
+            style: const TextStyle(fontSize: 14, color: Colors.white),
           ),
           
           // Stan kulki

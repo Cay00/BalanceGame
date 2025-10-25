@@ -4,6 +4,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'game_physics.dart';
 import 'ball_widget.dart';
 import 'data_panel.dart';
+import 'hole_widget.dart';
 
 /// Aplikacja Balance Game - gra z kulką sterowaną akcelerometrem
 ///
@@ -24,7 +25,20 @@ class MyApp extends StatelessWidget {
       title: 'Balance Game - Akcelerometr',
       debugShowCheckedModeBanner: false, // Ukrywa "DEBUG" banner w rogu
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF888888), // Szary metaliczny
+          brightness: Brightness.dark,
+        ),
+        scaffoldBackgroundColor: const Color(0xFF141414), // Ciemne tło
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF2A2A2A), // Ciemny metaliczny
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFF555555), // Metaliczny szary
+          foregroundColor: Colors.white,
+        ),
       ),
       home: const MyHomePage(title: 'Akcelerometr'),
     );
@@ -128,6 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _physics.initialize(
         MediaQuery.of(context).size.width,
         MediaQuery.of(context).size.height,
+        bottomPadding: MediaQuery.of(context).padding.bottom, // Padding dolnej belki
       );
     }
 
@@ -138,6 +153,14 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Stack(
         children: [
+          // === DZIURA - CEL ===
+          HoleWidget(
+            x: MediaQuery.of(context).size.width * 0.8, // 80% szerokości ekranu
+            y: MediaQuery.of(context).size.height * 0.7, // 70% wysokości ekranu
+            size: 50.0,
+            isActive: true,
+          ),
+          
           // === KULKA Z FIZYKĄ ===
           BallWidget(
             x: _physics.ballX,
@@ -145,26 +168,66 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
 
           // === PRZYCISK RESET ===
-          // Resetuje pozycję kulki
+          // Metaliczny przycisk w lewym dolnym rogu - resetuje pozycję kulki
           Positioned(
             bottom: 20,
             left: 20,
-            child: FloatingActionButton(
-              onPressed: _resetBall,
-              backgroundColor: Colors.red,
-              child: const Icon(Icons.refresh, color: Colors.white),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const RadialGradient(
+                  colors: [
+                    Color(0xFFB8B8B8), // Jasny metaliczny
+                    Color(0xFF888888), // Średni metaliczny
+                    Color(0xFF555555), // Ciemny metaliczny
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(2, 2),
+                  ),
+                ],
+              ),
+              child: FloatingActionButton(
+                onPressed: _resetBall,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                child: const Icon(Icons.refresh, color: Colors.white),
+              ),
             ),
           ),
 
           // === PRZYCISK KALIBRACJA ===
-          // Kalibruje akcelerometr
+          // Metaliczny przycisk w prawym dolnym rogu - kalibruje akcelerometr
           Positioned(
             bottom: 20,
             right: 20,
-            child: FloatingActionButton(
-              onPressed: _calibrate,
-              backgroundColor: Colors.green,
-              child: const Icon(Icons.center_focus_strong, color: Colors.white),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const RadialGradient(
+                  colors: [
+                    Color(0xFFB8B8B8), // Jasny metaliczny
+                    Color(0xFF888888), // Średni metaliczny
+                    Color(0xFF555555), // Ciemny metaliczny
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(2, 2),
+                  ),
+                ],
+              ),
+              child: FloatingActionButton(
+                onPressed: _calibrate,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                child: const Icon(Icons.center_focus_strong, color: Colors.white),
+              ),
             ),
           ),
 

@@ -27,13 +27,17 @@ class GamePhysics {
   double screenHeight = 0.0;
   
   /// Inicjalizuje fizykę z wymiarami ekranu
-  void initialize(double width, double height) {
+  void initialize(double width, double height, {double bottomPadding = 0}) {
     screenWidth = width;
     screenHeight = height;
     // Ustaw kulkę na środku ekranu
     ballX = width / 2;
     ballY = height / 2;
+    // Zapisz padding dolny dla kolizji
+    _bottomPadding = bottomPadding;
   }
+  
+  double _bottomPadding = 0.0;
   
   /// Resetuje pozycję kulki na środek ekranu i zatrzymuje ją
   void resetBall() {
@@ -102,9 +106,10 @@ class GamePhysics {
       ballY = 15;
       velocityY = -velocityY * 0.8;
     }
-    // Dolna ściana (zostaw miejsce na AppBar)
-    if (ballY > screenHeight - 100) {
-      ballY = screenHeight - 100;
+    // Dolna ściana (zostaw miejsce na AppBar i dolną belkę nawigacyjną)
+    double bottomBoundary = screenHeight - 100 - _bottomPadding;
+    if (ballY > bottomBoundary) {
+      ballY = bottomBoundary;
       velocityY = -velocityY * 0.8;
     }
   }
