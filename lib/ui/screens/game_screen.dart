@@ -84,9 +84,58 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {}); // Odśwież UI
   }
 
+  /// Losuje nową pozycję dziury, unikając przeszkód
+  void _generateHolePosition() {
+    if (_physics.screenWidth == 0 || _physics.screenHeight == 0) {
+      return;
+    }
+
+    final screenWidth = _physics.screenWidth;
+    final screenHeight = _physics.screenHeight;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    // Ustal promień dziury
+    _holeRadius = 25.0; // Połowa size = 50.0
+
+    // Wylosuj pozycję dziury w bezpiecznym obszarze ekranu,
+    // starając się unikać nachodzenia na przeszkody.
+    const int maxAttempts = 30;
+    double holeX = screenWidth * 0.8;
+    double holeY = screenHeight * 0.7;
+
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      final candidateX =
+          40.0 + _random.nextDouble() * (screenWidth - 80.0); // marginesy
+      final availableHeight = screenHeight - bottomPadding - 160.0;
+      final candidateY = 80.0 + _random.nextDouble() * max(0, availableHeight);
+
+      final overlapsObstacle = _physics.obstacles.any((o) {
+        final left = o.x - _holeRadius;
+        final right = o.x + o.width + _holeRadius;
+        final top = o.y - _holeRadius;
+        final bottom = o.y + o.height + _holeRadius;
+        return candidateX >= left &&
+            candidateX <= right &&
+            candidateY >= top &&
+            candidateY <= bottom;
+      });
+
+      if (!overlapsObstacle) {
+        holeX = candidateX;
+        holeY = candidateY;
+        break;
+      }
+    }
+
+    _holeX = holeX;
+    _holeY = holeY;
+  }
+
   /// Resetuje pozycję kulki na środek ekranu i zatrzymuje ją
+  /// oraz losuje nową pozycję dziury
   void _resetBall() {
     _physics.resetBall();
+    _generateHolePosition();
     setState(() {});
   }
 
@@ -126,41 +175,8 @@ class _MyHomePageState extends State<MyHomePage> {
         bottomPadding: bottomPadding, // Padding dolnej belki
       );
 
-      // Ustal promień dziury
-      _holeRadius = 25.0; // Połowa size = 50.0
-
-      // Wylosuj pozycję dziury w bezpiecznym obszarze ekranu,
-      // starając się unikać nachodzenia na przeszkody.
-      const int maxAttempts = 30;
-      double holeX = screenWidth * 0.8;
-      double holeY = screenHeight * 0.7;
-
-      for (var attempt = 0; attempt < maxAttempts; attempt++) {
-        final candidateX =
-            40.0 + _random.nextDouble() * (screenWidth - 80.0); // marginesy
-        final availableHeight = screenHeight - bottomPadding - 160.0;
-        final candidateY = 80.0 + _random.nextDouble() * max(0, availableHeight);
-
-        final overlapsObstacle = _physics.obstacles.any((o) {
-          final left = o.x - _holeRadius;
-          final right = o.x + o.width + _holeRadius;
-          final top = o.y - _holeRadius;
-          final bottom = o.y + o.height + _holeRadius;
-          return candidateX >= left &&
-              candidateX <= right &&
-              candidateY >= top &&
-              candidateY <= bottom;
-        });
-
-        if (!overlapsObstacle) {
-          holeX = candidateX;
-          holeY = candidateY;
-          break;
-        }
-      }
-
-      _holeX = holeX;
-      _holeY = holeY;
+      // Wylosuj pozycję dziury
+      _generateHolePosition();
     }
 
     return Scaffold(

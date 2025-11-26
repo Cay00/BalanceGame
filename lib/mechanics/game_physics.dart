@@ -177,7 +177,7 @@ class GamePhysics {
       return;
     }
 
-    const int count = 8;
+    const int count = 5;
     const int maxAttemptsPerObstacle = 25;
 
     for (var i = 0; i < count; i++) {
