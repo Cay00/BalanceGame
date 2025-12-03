@@ -18,10 +18,7 @@ class StartScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1E1E1E),
-              Color(0xFF101010),
-            ],
+            colors: [Color(0xFF1E1E1E), Color(0xFF101010)],
           ),
         ),
         child: SafeArea(
@@ -37,7 +34,7 @@ class StartScreen extends StatelessWidget {
                   Text(
                     'Balance Game',
                     textAlign: TextAlign.center,
-                      style: TextStyle(
+                    style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2,
@@ -48,10 +45,7 @@ class StartScreen extends StatelessWidget {
                   const Text(
                     'Steruj kulką pochylając telefon',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   const Spacer(),
 
@@ -114,10 +108,7 @@ class StartScreen extends StatelessWidget {
                       },
                       child: const Text(
                         'USTAWIENIA',
-                        style: TextStyle(
-                          fontSize: 16,
-                          letterSpacing: 1.2,
-                        ),
+                        style: TextStyle(fontSize: 16, letterSpacing: 1.2),
                       ),
                     ),
                   ),
@@ -130,10 +121,7 @@ class StartScreen extends StatelessWidget {
                     },
                     child: const Text(
                       'WYJŚCIE',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.redAccent,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.redAccent),
                     ),
                   ),
                   const Spacer(),
@@ -146,5 +134,3 @@ class StartScreen extends StatelessWidget {
     );
   }
 }
-
-
