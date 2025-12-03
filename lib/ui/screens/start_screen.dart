@@ -37,11 +37,11 @@ class StartScreen extends StatelessWidget {
                   Text(
                     'Balance Game',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                      style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2,
-                      color: colorScheme.onBackground,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 8),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import 'package:balance_game/mechanics/game_physics.dart';
@@ -36,12 +37,15 @@ class _MyHomePageState extends State<MyHomePage> {
   double _holeX = 0.0;
   double _holeY = 0.0;
   double _holeRadius = 0.0;
+  double _bottomPadding = 0.0;
 
   // === SUBSCRIPTIONS I TIMERY ===
   StreamSubscription<AccelerometerEvent>?
       _accelerometerSubscription; // Pobieranie danych akcelerometru
   Timer? _physicsTimer; // Timer dla pętli fizyki (60 FPS)
+  Timer? _levelGenerationTimer; // Timer do generowania nowego poziomu
   final Random _random = Random();
+  bool _isGeneratingNewLevel = false; // Flaga, czy trwa generowanie nowego poziomu
 
   /// Inicjalizacja komponentu
   ///
@@ -60,8 +64,8 @@ class _MyHomePageState extends State<MyHomePage> {
       _updatePhysics();
     });
 
-    // Pobieraj dane z akcelerometru
-    _accelerometerSubscription = accelerometerEvents.listen((
+    // Pobieraj dane z akcelerometru (nowe API sensors_plus)
+    _accelerometerSubscription = accelerometerEventStream().listen((
       AccelerometerEvent event,
     ) {
       setState(() {
@@ -74,14 +78,85 @@ class _MyHomePageState extends State<MyHomePage> {
 
   /// Aktualizuje fizykę gry
   void _updatePhysics() {
+    if (_isGeneratingNewLevel) {
+      return; // Nie aktualizuj fizyki podczas generowania nowego poziomu
+    }
+
     _physics.updatePhysics(_x, _y);
 
     // Aktualizuj wynik tylko jeśli znamy pozycję dziury
     if (_holeRadius > 0) {
-      _physics.updateScore(_holeX, _holeY, _holeRadius);
+      final bool justEnteredHole = _physics.updateScore(_holeX, _holeY, _holeRadius);
+      
+      // Jeśli kulka właśnie dotknęła dziury
+      if (justEnteredHole && !_isGeneratingNewLevel) {
+        debugPrint('Kulka dotknęła dziury! Uruchamiam wibrację...');
+        _handleHoleReached();
+      }
     }
 
     setState(() {}); // Odśwież UI
+  }
+
+  /// Obsługuje dotknięcie dziury - wibracja i generowanie nowego poziomu
+  void _handleHoleReached() {
+    _isGeneratingNewLevel = true;
+
+    // Uruchom wibrację na 0.5 sekundy
+    _vibrateForDuration(const Duration(milliseconds: 500));
+
+    // Po 1 sekundzie wygeneruj nowy poziom
+    _levelGenerationTimer?.cancel();
+    _levelGenerationTimer = Timer(const Duration(seconds: 1), () {
+      _generateNewLevel();
+      _isGeneratingNewLevel = false;
+    });
+  }
+
+  /// Wibruje przez określony czas (wywołuje HapticFeedback wielokrotnie)
+  void _vibrateForDuration(Duration duration) {
+    debugPrint('Rozpoczynam wibrację na ${duration.inMilliseconds}ms');
+    
+    // Użyj heavyImpact dla mocniejszej wibracji (natychmiast)
+    HapticFeedback.heavyImpact();
+    
+    // Kontynuuj wibrację przez określony czas używając różnych typów wibracji
+    const int intervalMs = 80; // Wibracja co 80ms dla płynniejszego efektu
+    final int iterations = (duration.inMilliseconds / intervalMs).ceil();
+    
+    debugPrint('Wibracja: $iterations iteracji co $intervalMs ms');
+    
+    for (int i = 1; i < iterations; i++) {
+      Timer(Duration(milliseconds: i * intervalMs), () {
+        // Przemiennie używaj heavyImpact i mediumImpact dla różnorodności
+        if (i % 2 == 0) {
+          HapticFeedback.heavyImpact();
+        } else {
+          HapticFeedback.mediumImpact();
+        }
+      });
+    }
+  }
+
+  /// Generuje nowy poziom - nowe przeszkody i nową pozycję dziury
+  void _generateNewLevel() {
+    final screenWidth = _physics.screenWidth;
+    final screenHeight = _physics.screenHeight;
+
+    // Wygeneruj nowe przeszkody
+    _physics.generateNewLevel();
+
+    // Wylosuj nową pozycję X dziury
+    _holeX = 40.0 + _random.nextDouble() * (screenWidth - 80.0);
+
+    // Pozycja Y dziury pozostaje taka sama (na dole)
+    final double bottomSafeMargin = 120.0;
+    _holeY = screenHeight - _bottomPadding - bottomSafeMargin - 50.0;
+
+    // Zresetuj kulkę na górę
+    _physics.resetBall();
+
+    setState(() {});
   }
 
   /// Resetuje pozycję kulki na środek ekranu i zatrzymuje ją
@@ -102,6 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _accelerometerSubscription
         ?.cancel(); // Zatrzymaj pobieranie danych akcelerometru
     _physicsTimer?.cancel(); // Zatrzymaj pętlę fizyki
+    _levelGenerationTimer?.cancel(); // Zatrzymaj timer generowania poziomu
     super.dispose();
   }
 
@@ -119,6 +195,8 @@ class _MyHomePageState extends State<MyHomePage> {
       final screenWidth = MediaQuery.of(context).size.width;
       final screenHeight = MediaQuery.of(context).size.height;
       final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+      _bottomPadding = bottomPadding; // Zapisz padding dla późniejszego użycia
 
       _physics.initialize(
         screenWidth,
@@ -153,7 +231,7 @@ class _MyHomePageState extends State<MyHomePage> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.white24),
               ),
@@ -209,7 +287,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(2, 2),
                   ),
@@ -241,7 +319,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(2, 2),
                   ),

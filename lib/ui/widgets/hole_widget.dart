@@ -49,19 +49,19 @@ class HoleWidget extends StatelessWidget {
           boxShadow: [
             // Główny cień dziury
             BoxShadow(
-              color: Colors.black.withOpacity(0.8),
+              color: Colors.black.withValues(alpha: 0.8),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
             // Dodatkowy cień dla głębi
             BoxShadow(
-              color: Colors.black.withOpacity(0.6),
+              color: Colors.black.withValues(alpha: 0.6),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
             // Subtelny refleks na brzegu
             BoxShadow(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               blurRadius: 2,
               offset: const Offset(-1, -1),
             ),
@@ -72,7 +72,7 @@ class HoleWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.green.withOpacity(0.3),
+                    color: Colors.green.withValues(alpha: 0.3),
                     width: 2,
                   ),
                 ),

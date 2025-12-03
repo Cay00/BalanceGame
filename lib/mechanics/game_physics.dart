@@ -75,6 +75,11 @@ class GamePhysics {
     velocityY = 0.0;
   }
 
+  /// Generuje nowy poziom - nowe przeszkody
+  void generateNewLevel() {
+    _generateObstacles();
+  }
+
   /// Kalibruje akcelerometr - zapisuje aktualne wartości jako "poziom 0"
   void calibrate(double x, double y) {
     offsetX = x;
@@ -123,7 +128,8 @@ class GamePhysics {
   /// Aktualizuje wynik gry na podstawie pozycji dziury
   ///
   /// Wywołuj po `updatePhysics`, przekazując współrzędne środka dziury i jej promień.
-  void updateScore(double holeX, double holeY, double holeRadius) {
+  /// Zwraca true, jeśli kulka właśnie dotknęła dziury (moment wejścia).
+  bool updateScore(double holeX, double holeY, double holeRadius) {
     // Odległość pomiędzy środkiem kulki a środkiem dziury
     final dx = ballX - holeX;
     final dy = ballY - holeY;
@@ -133,11 +139,13 @@ class GamePhysics {
     final isNowInside = distanceSquared <= radiusSquared;
 
     // Zlicz punkt tylko w momencie wejścia do dziury (zbocze narastające)
-    if (isNowInside && !_isInsideHole) {
+    final bool justEntered = isNowInside && !_isInsideHole;
+    if (justEntered) {
       score += 1;
     }
 
     _isInsideHole = isNowInside;
+    return justEntered;
   }
 
   /// Obsługuje kolizje kulki ze ścianami ekranu
