@@ -129,10 +129,13 @@ class _MyHomePageState extends State<MyHomePage> {
       // Ustal promień dziury
       _holeRadius = 25.0; // Połowa size = 50.0
 
-      // Wylosuj pozycję dziury w bezpiecznym obszarze ekranu
+      // Wylosuj pozycję X dziury (od lewej do prawej, z marginesami)
       _holeX = 40.0 + _random.nextDouble() * (screenWidth - 80.0); // marginesy
-      final availableHeight = screenHeight - bottomPadding - 160.0;
-      _holeY = 80.0 + _random.nextDouble() * max(0, availableHeight);
+
+      // Ustaw dziurę przy dolnej krawędzi ekranu (nad przyciskami i paddingiem),
+      // ale podnieś ją dodatkowo o 100 px w górę
+      final double bottomSafeMargin = 120.0; // miejsce na przyciski i panel
+      _holeY = screenHeight - bottomPadding - bottomSafeMargin - 100.0;
     }
 
     return Scaffold(

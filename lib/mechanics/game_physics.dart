@@ -165,7 +165,7 @@ class GamePhysics {
     }
   }
 
-  /// Generuje 4 poziome przeszkody z dziurami w równych odstępach pionowych
+  /// Generuje 8 poziomych przeszkód z dziurami, z gęstszym (mniejszym) odstępem pionowym
   void _generateObstacles() {
     obstacles.clear();
 
@@ -173,10 +173,11 @@ class GamePhysics {
       return;
     }
 
-    const int obstacleCount = 4;
+    const int obstacleCount = 8;
     const double obstacleHeight = 16.0; // Grubość przeszkody
     const double holeWidth = 80.0; // Szerokość dziury
     final double availableHeight = screenHeight - 100 - _bottomPadding - 60; // Miejsce na górę i dół
+    // Spacing jest automatycznie ~2x mniejszy po zwiększeniu obstacleCount do 8
     final double spacing = availableHeight / (obstacleCount + 1); // Równe odstępy
 
     for (int i = 0; i < obstacleCount; i++) {
