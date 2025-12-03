@@ -1,29 +1,10 @@
-import 'dart:math';
-
-/// Prosta reprezentacja prostokątnej przeszkody na planszy
-class Obstacle {
-  final double x; // lewy górny róg
-  final double y;
-  final double width;
-  final double height;
-  final double angle; // kąt obrotu (radiany) dla wizualizacji
-
-  const Obstacle({
-    required this.x,
-    required this.y,
-    required this.width,
-    required this.height,
-    required this.angle,
-  });
-}
-
-/// Fizyka gry - zarządza ruchem kulki, kolizjami i przeszkodami
+/// Fizyka gry - zarządza ruchem kulki i kolizjami
 ///
 /// Zawiera:
 /// - Pozycję i prędkość kulki
 /// - Parametry fizyki (grawitacja, tarcie)
 /// - Kalibrację akcelerometru
-/// - Logikę kolizji ze ścianami i przeszkodami
+/// - Logikę kolizji ze ścianami
 class GamePhysics {
   // === FIZYKA KULKI ===
   double ballX = 0.0; // Pozycja kulki w osi X (piksele)
@@ -50,10 +31,6 @@ class GamePhysics {
 
   double _bottomPadding = 0.0;
 
-  // === PRZESZKODY ===
-  final List<Obstacle> obstacles = [];
-  final Random _random = Random();
-
   /// Inicjalizuje fizykę z wymiarami ekranu
   void initialize(double width, double height, {double bottomPadding = 0}) {
     screenWidth = width;
@@ -63,9 +40,6 @@ class GamePhysics {
     ballY = height / 2;
     // Zapisz padding dolny dla kolizji
     _bottomPadding = bottomPadding;
-
-    // Wygeneruj losowe przeszkody
-    _generateObstacles();
   }
 
   /// Resetuje pozycję kulki na środek ekranu i zatrzymuje ją
@@ -74,9 +48,6 @@ class GamePhysics {
     ballY = screenHeight / 2;
     velocityX = 0.0;
     velocityY = 0.0;
-
-    // Opcjonalnie odśwież przeszkody przy resecie
-    _generateObstacles();
   }
 
   /// Kalibruje akcelerometr - zapisuje aktualne wartości jako "poziom 0"
@@ -119,9 +90,6 @@ class GamePhysics {
 
     // === KOLIZJE ZE ŚCIANAMI ===
     _handleCollisions();
-
-    // === KOLIZJE Z PRZESZKODAMI ===
-    _handleObstacleCollisions();
   }
 
   /// Aktualizuje wynik gry na podstawie pozycji dziury
@@ -166,119 +134,6 @@ class GamePhysics {
     if (ballY > bottomBoundary) {
       ballY = bottomBoundary;
       velocityY = -velocityY * 0.8;
-    }
-  }
-
-  /// Generuje losowe, podłużne przeszkody
-  void _generateObstacles() {
-    obstacles.clear();
-
-    if (screenWidth == 0 || screenHeight == 0) {
-      return;
-    }
-
-    const int count = 8;
-    const int maxAttemptsPerObstacle = 25;
-
-    for (var i = 0; i < count; i++) {
-      Obstacle? newObstacle;
-
-      for (var attempt = 0; attempt < maxAttemptsPerObstacle; attempt++) {
-        final isHorizontal = _random.nextBool();
-
-        final double length = (isHorizontal ? screenWidth : screenHeight) *
-            (0.25 + _random.nextDouble() * 0.25);
-        const double thickness = 16.0;
-        final double angle = (_random.nextDouble() - 0.5) * pi / 2; // ~ -45°..45°
-
-        double x, y, width, height;
-
-        if (isHorizontal) {
-          width = length;
-          height = thickness;
-          x = _random.nextDouble() * (screenWidth - width - 40) + 20;
-          y = _random.nextDouble() * (screenHeight * 0.6 - height - 40) + 60;
-        } else {
-          width = thickness;
-          height = length;
-          x = _random.nextDouble() * (screenWidth * 0.8 - width - 40) + 40;
-          y = _random.nextDouble() * (screenHeight * 0.5 - height - 40) + 80;
-        }
-
-        final candidate = Obstacle(
-          x: x,
-          y: y,
-          width: width,
-          height: height,
-          angle: angle,
-        );
-
-        // Sprawdź, czy nachodzi na istniejące przeszkody
-        final overlapsExisting = obstacles.any((existing) {
-          final bool noOverlap =
-              candidate.x + candidate.width <= existing.x ||
-                  existing.x + existing.width <= candidate.x ||
-                  candidate.y + candidate.height <= existing.y ||
-                  existing.y + existing.height <= candidate.y;
-          return !noOverlap;
-        });
-
-        if (!overlapsExisting) {
-          newObstacle = candidate;
-          break;
-        }
-      }
-
-      if (newObstacle != null) {
-        obstacles.add(newObstacle);
-      }
-    }
-  }
-
-  /// Obsługuje kolizje kulki z prostokątnymi przeszkodami
-  void _handleObstacleCollisions() {
-    const double ballRadius = 15.0;
-
-    for (final obstacle in obstacles) {
-      final double left = obstacle.x;
-      final double right = obstacle.x + obstacle.width;
-      final double top = obstacle.y;
-      final double bottom = obstacle.y + obstacle.height;
-
-      // Najbliższy punkt prostokąta do środka kulki
-      final double closestX = ballX.clamp(left, right);
-      final double closestY = ballY.clamp(top, bottom);
-
-      final double dx = ballX - closestX;
-      final double dy = ballY - closestY;
-
-      // Czy kulka wchodzi w prostokąt
-      if (dx * dx + dy * dy <= ballRadius * ballRadius) {
-        // Oblicz penetrację w każdym kierunku i odbij kulkę od najbliższej krawędzi
-        final double overlapLeft = (ballX + ballRadius) - left;
-        final double overlapRight = right - (ballX - ballRadius);
-        final double overlapTop = (ballY + ballRadius) - top;
-        final double overlapBottom = bottom - (ballY - ballRadius);
-
-        final double minOverlap =
-            [overlapLeft, overlapRight, overlapTop, overlapBottom].reduce(min);
-
-        const double bounceFactor = 0.8;
-
-        if (minOverlap == overlapLeft) {
-          ballX = left - ballRadius;
-          velocityX = -velocityX * bounceFactor;
-        } else if (minOverlap == overlapRight) {
-          ballX = right + ballRadius;
-          velocityX = -velocityX * bounceFactor;
-        } else if (minOverlap == overlapTop) {
-          ballY = top - ballRadius;
-          velocityY = -velocityY * bounceFactor;
-        } else {
-          ballY = bottom + ballRadius;
-          velocityY = -velocityY * bounceFactor;
-        }
-      }
     }
   }
 }

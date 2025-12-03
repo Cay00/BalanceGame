@@ -8,7 +8,6 @@ import 'package:balance_game/mechanics/game_physics.dart';
 import 'package:balance_game/ui/widgets/ball_widget.dart';
 import 'package:balance_game/ui/widgets/data_panel.dart';
 import 'package:balance_game/ui/widgets/hole_widget.dart';
-import 'package:balance_game/ui/widgets/obstacle_widget.dart';
 
 /// Główna strona gry z kulką i akcelerometrem
 class MyHomePage extends StatefulWidget {
@@ -129,38 +128,10 @@ class _MyHomePageState extends State<MyHomePage> {
       // Ustal promień dziury
       _holeRadius = 25.0; // Połowa size = 50.0
 
-      // Wylosuj pozycję dziury w bezpiecznym obszarze ekranu,
-      // starając się unikać nachodzenia na przeszkody.
-      const int maxAttempts = 30;
-      double holeX = screenWidth * 0.8;
-      double holeY = screenHeight * 0.7;
-
-      for (var attempt = 0; attempt < maxAttempts; attempt++) {
-        final candidateX =
-            40.0 + _random.nextDouble() * (screenWidth - 80.0); // marginesy
-        final availableHeight = screenHeight - bottomPadding - 160.0;
-        final candidateY = 80.0 + _random.nextDouble() * max(0, availableHeight);
-
-        final overlapsObstacle = _physics.obstacles.any((o) {
-          final left = o.x - _holeRadius;
-          final right = o.x + o.width + _holeRadius;
-          final top = o.y - _holeRadius;
-          final bottom = o.y + o.height + _holeRadius;
-          return candidateX >= left &&
-              candidateX <= right &&
-              candidateY >= top &&
-              candidateY <= bottom;
-        });
-
-        if (!overlapsObstacle) {
-          holeX = candidateX;
-          holeY = candidateY;
-          break;
-        }
-      }
-
-      _holeX = holeX;
-      _holeY = holeY;
+      // Wylosuj pozycję dziury w bezpiecznym obszarze ekranu
+      _holeX = 40.0 + _random.nextDouble() * (screenWidth - 80.0); // marginesy
+      final availableHeight = screenHeight - bottomPadding - 160.0;
+      _holeY = 80.0 + _random.nextDouble() * max(0, availableHeight);
     }
 
     return Scaffold(
@@ -194,21 +165,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
           // === DZIURA - CEL ===
           HoleWidget(
-            x: _holeX, // 80% szerokości ekranu
-            y: _holeY, // 70% wysokości ekranu
+            x: _holeX,
+            y: _holeY,
             size: _holeRadius * 2,
             isActive: true,
           ),
-
-          // === PRZESZKODY ===
-          for (final obstacle in _physics.obstacles)
-            ObstacleWidget(
-              x: obstacle.x,
-              y: obstacle.y,
-              width: obstacle.width,
-              height: obstacle.height,
-              angle: obstacle.angle,
-            ),
 
           // === KULKA Z FIZYKĄ ===
           BallWidget(
