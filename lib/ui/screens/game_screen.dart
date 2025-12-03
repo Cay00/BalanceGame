@@ -133,9 +133,9 @@ class _MyHomePageState extends State<MyHomePage> {
       _holeX = 40.0 + _random.nextDouble() * (screenWidth - 80.0); // marginesy
 
       // Ustaw dziurę przy dolnej krawędzi ekranu (nad przyciskami i paddingiem),
-      // ale podnieś ją dodatkowo o 100 px w górę
+      // ale podnieś ją dodatkowo o 50 px w górę
       final double bottomSafeMargin = 120.0; // miejsce na przyciski i panel
-      _holeY = screenHeight - bottomPadding - bottomSafeMargin - 100.0;
+      _holeY = screenHeight - bottomPadding - bottomSafeMargin - 50.0;
     }
 
     return Scaffold(

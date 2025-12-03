@@ -38,8 +38,9 @@ class ObstacleWidget extends StatelessWidget {
                 height: height,
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    bottomLeft: Radius.circular(8),
+                    // Zewnętrzna strona prosta, zaokrąglona od strony dziury
+                    topRight: Radius.circular(8),
+                    bottomRight: Radius.circular(8),
                   ),
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
@@ -68,8 +69,9 @@ class ObstacleWidget extends StatelessWidget {
                 height: height,
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(8),
-                    bottomRight: Radius.circular(8),
+                    // Zewnętrzna strona prosta, zaokrąglona od strony dziury
+                    topLeft: Radius.circular(8),
+                    bottomLeft: Radius.circular(8),
                   ),
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,

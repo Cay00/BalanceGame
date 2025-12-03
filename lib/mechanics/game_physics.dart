@@ -57,9 +57,9 @@ class GamePhysics {
   void initialize(double width, double height, {double bottomPadding = 0}) {
     screenWidth = width;
     screenHeight = height;
-    // Ustaw kulkę na środku ekranu
+    // Ustaw kulkę na środku szerokości i przy górnej krawędzi ekranu
     ballX = width / 2;
-    ballY = height / 2;
+    ballY = 30.0; // trochę poniżej ściany, żeby nie była w niej „wtopiona”
     // Zapisz padding dolny dla kolizji
     _bottomPadding = bottomPadding;
 
@@ -67,10 +67,10 @@ class GamePhysics {
     _generateObstacles();
   }
 
-  /// Resetuje pozycję kulki na środek ekranu i zatrzymuje ją
+  /// Resetuje pozycję kulki na górę ekranu i zatrzymuje ją
   void resetBall() {
     ballX = screenWidth / 2;
-    ballY = screenHeight / 2;
+    ballY = 30.0;
     velocityX = 0.0;
     velocityY = 0.0;
   }
@@ -181,7 +181,8 @@ class GamePhysics {
     final double spacing = availableHeight / (obstacleCount + 1); // Równe odstępy
 
     for (int i = 0; i < obstacleCount; i++) {
-      final double y = 60 + spacing * (i + 1); // Pozycja Y przeszkody
+      // Podnieś (przesuń w górę) poziom generowania przeszkód o 50 px
+      final double y = 60 + spacing * (i + 1) - 50.0; // Pozycja Y przeszkody
       final double holeX = 40 + (screenWidth - 80) * (0.3 + (i % 3) * 0.2); // Dziura w różnych miejscach
 
       obstacles.add(Obstacle(
