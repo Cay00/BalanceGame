@@ -129,14 +129,29 @@ class GamePhysics {
   ///
   /// Wywołuj po `updatePhysics`, przekazując współrzędne środka dziury i jej promień.
   /// Zwraca true, jeśli kulka właśnie dotknęła dziury (moment wejścia).
+  /// Kulka musi być głębiej w dziurze (60% promienia) aby zaliczyć punkt.
+  /// Gdy kulka jest w dziurze, zatrzymuje się.
   bool updateScore(double holeX, double holeY, double holeRadius) {
     // Odległość pomiędzy środkiem kulki a środkiem dziury
     final dx = ballX - holeX;
     final dy = ballY - holeY;
     final distanceSquared = dx * dx + dy * dy;
-    final radiusSquared = holeRadius * holeRadius;
+    
+    // Użyj mniejszego promienia (60% promienia dziury) - kulka musi być głębiej
+    final double detectionRadius = holeRadius * 0.6;
+    final double detectionRadiusSquared = detectionRadius * detectionRadius;
 
-    final isNowInside = distanceSquared <= radiusSquared;
+    final isNowInside = distanceSquared <= detectionRadiusSquared;
+
+    // Jeśli kulka jest w dziurze, zatrzymaj ją
+    if (isNowInside) {
+      // Ustaw kulkę dokładnie w środku dziury
+      ballX = holeX;
+      ballY = holeY;
+      // Zatrzymaj prędkość
+      velocityX = 0.0;
+      velocityY = 0.0;
+    }
 
     // Zlicz punkt tylko w momencie wejścia do dziury (zbocze narastające)
     final bool justEntered = isNowInside && !_isInsideHole;

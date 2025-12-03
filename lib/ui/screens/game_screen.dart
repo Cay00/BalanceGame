@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'package:balance_game/mechanics/game_physics.dart';
 import 'package:balance_game/ui/widgets/ball_widget.dart';
@@ -52,9 +52,13 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Uruchamia:
   /// - Pętlę fizyki (60 FPS = co 16ms)
   /// - Pobieranie danych z akcelerometru
+  /// - Wyłącza wygaszanie ekranu
   @override
   void initState() {
     super.initState();
+
+    // Wyłącz wygaszanie ekranu podczas gry
+    WakelockPlus.enable();
 
     // Inicjalizuj fizykę gry
     _physics = GamePhysics();
@@ -88,9 +92,9 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_holeRadius > 0) {
       final bool justEnteredHole = _physics.updateScore(_holeX, _holeY, _holeRadius);
       
-      // Jeśli kulka właśnie dotknęła dziury
+      // Jeśli kulka właśnie dotknęła dziury (punkt został dodany)
       if (justEnteredHole && !_isGeneratingNewLevel) {
-        debugPrint('Kulka dotknęła dziury! Uruchamiam wibrację...');
+        // Uruchom generowanie nowego poziomu po 1 sekundzie
         _handleHoleReached();
       }
     }
@@ -98,12 +102,9 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {}); // Odśwież UI
   }
 
-  /// Obsługuje dotknięcie dziury - wibracja i generowanie nowego poziomu
+  /// Obsługuje dotknięcie dziury - generowanie nowego poziomu
   void _handleHoleReached() {
     _isGeneratingNewLevel = true;
-
-    // Uruchom wibrację na 0.5 sekundy
-    _vibrateForDuration(const Duration(milliseconds: 500));
 
     // Po 1 sekundzie wygeneruj nowy poziom
     _levelGenerationTimer?.cancel();
@@ -111,31 +112,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _generateNewLevel();
       _isGeneratingNewLevel = false;
     });
-  }
-
-  /// Wibruje przez określony czas (wywołuje HapticFeedback wielokrotnie)
-  void _vibrateForDuration(Duration duration) {
-    debugPrint('Rozpoczynam wibrację na ${duration.inMilliseconds}ms');
-    
-    // Użyj heavyImpact dla mocniejszej wibracji (natychmiast)
-    HapticFeedback.heavyImpact();
-    
-    // Kontynuuj wibrację przez określony czas używając różnych typów wibracji
-    const int intervalMs = 80; // Wibracja co 80ms dla płynniejszego efektu
-    final int iterations = (duration.inMilliseconds / intervalMs).ceil();
-    
-    debugPrint('Wibracja: $iterations iteracji co $intervalMs ms');
-    
-    for (int i = 1; i < iterations; i++) {
-      Timer(Duration(milliseconds: i * intervalMs), () {
-        // Przemiennie używaj heavyImpact i mediumImpact dla różnorodności
-        if (i % 2 == 0) {
-          HapticFeedback.heavyImpact();
-        } else {
-          HapticFeedback.mediumImpact();
-        }
-      });
-    }
   }
 
   /// Generuje nowy poziom - nowe przeszkody i nową pozycję dziury
@@ -174,6 +150,9 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Czyszczenie zasobów przy zamykaniu komponentu
   @override
   void dispose() {
+    // Włącz ponownie wygaszanie ekranu
+    WakelockPlus.disable();
+    
     _accelerometerSubscription
         ?.cancel(); // Zatrzymaj pobieranie danych akcelerometru
     _physicsTimer?.cancel(); // Zatrzymaj pętlę fizyki
