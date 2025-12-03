@@ -8,6 +8,7 @@ import 'package:balance_game/mechanics/game_physics.dart';
 import 'package:balance_game/ui/widgets/ball_widget.dart';
 import 'package:balance_game/ui/widgets/data_panel.dart';
 import 'package:balance_game/ui/widgets/hole_widget.dart';
+import 'package:balance_game/ui/widgets/obstacle_widget.dart';
 
 /// Główna strona gry z kulką i akcelerometrem
 class MyHomePage extends StatefulWidget {
@@ -162,6 +163,17 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
+
+          // === PRZESZKODY ===
+          for (final obstacle in _physics.obstacles)
+            ObstacleWidget(
+              x: obstacle.x,
+              y: obstacle.y,
+              width: obstacle.width,
+              height: obstacle.height,
+              holeX: obstacle.holeX,
+              holeWidth: obstacle.holeWidth,
+            ),
 
           // === DZIURA - CEL ===
           HoleWidget(

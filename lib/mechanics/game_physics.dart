@@ -1,10 +1,29 @@
+/// Przeszkoda pozioma z dziurą, przez którą kulka może przejść
+class Obstacle {
+  final double x; // lewy górny róg przeszkody
+  final double y;
+  final double width; // szerokość przeszkody (cała szerokość ekranu)
+  final double height; // wysokość przeszkody (grubość)
+  final double holeX; // pozycja X środka dziury
+  final double holeWidth; // szerokość dziury
+
+  const Obstacle({
+    required this.x,
+    required this.y,
+    required this.width,
+    required this.height,
+    required this.holeX,
+    required this.holeWidth,
+  });
+}
+
 /// Fizyka gry - zarządza ruchem kulki i kolizjami
 ///
 /// Zawiera:
 /// - Pozycję i prędkość kulki
 /// - Parametry fizyki (grawitacja, tarcie)
 /// - Kalibrację akcelerometru
-/// - Logikę kolizji ze ścianami
+/// - Logikę kolizji ze ścianami i przeszkodami
 class GamePhysics {
   // === FIZYKA KULKI ===
   double ballX = 0.0; // Pozycja kulki w osi X (piksele)
@@ -31,6 +50,9 @@ class GamePhysics {
 
   double _bottomPadding = 0.0;
 
+  // === PRZESZKODY ===
+  final List<Obstacle> obstacles = [];
+
   /// Inicjalizuje fizykę z wymiarami ekranu
   void initialize(double width, double height, {double bottomPadding = 0}) {
     screenWidth = width;
@@ -40,6 +62,9 @@ class GamePhysics {
     ballY = height / 2;
     // Zapisz padding dolny dla kolizji
     _bottomPadding = bottomPadding;
+
+    // Wygeneruj przeszkody
+    _generateObstacles();
   }
 
   /// Resetuje pozycję kulki na środek ekranu i zatrzymuje ją
@@ -90,6 +115,9 @@ class GamePhysics {
 
     // === KOLIZJE ZE ŚCIANAMI ===
     _handleCollisions();
+
+    // === KOLIZJE Z PRZESZKODAMI ===
+    _handleObstacleCollisions();
   }
 
   /// Aktualizuje wynik gry na podstawie pozycji dziury
@@ -134,6 +162,69 @@ class GamePhysics {
     if (ballY > bottomBoundary) {
       ballY = bottomBoundary;
       velocityY = -velocityY * 0.8;
+    }
+  }
+
+  /// Generuje 4 poziome przeszkody z dziurami w równych odstępach pionowych
+  void _generateObstacles() {
+    obstacles.clear();
+
+    if (screenWidth == 0 || screenHeight == 0) {
+      return;
+    }
+
+    const int obstacleCount = 4;
+    const double obstacleHeight = 16.0; // Grubość przeszkody
+    const double holeWidth = 80.0; // Szerokość dziury
+    final double availableHeight = screenHeight - 100 - _bottomPadding - 60; // Miejsce na górę i dół
+    final double spacing = availableHeight / (obstacleCount + 1); // Równe odstępy
+
+    for (int i = 0; i < obstacleCount; i++) {
+      final double y = 60 + spacing * (i + 1); // Pozycja Y przeszkody
+      final double holeX = 40 + (screenWidth - 80) * (0.3 + (i % 3) * 0.2); // Dziura w różnych miejscach
+
+      obstacles.add(Obstacle(
+        x: 0,
+        y: y,
+        width: screenWidth,
+        height: obstacleHeight,
+        holeX: holeX,
+        holeWidth: holeWidth,
+      ));
+    }
+  }
+
+  /// Obsługuje kolizje kulki z przeszkodami (uwzględnia dziury)
+  void _handleObstacleCollisions() {
+    const double ballRadius = 15.0;
+
+    for (final obstacle in obstacles) {
+      final double obstacleTop = obstacle.y;
+      final double obstacleBottom = obstacle.y + obstacle.height;
+      final double holeLeft = obstacle.holeX - obstacle.holeWidth / 2;
+      final double holeRight = obstacle.holeX + obstacle.holeWidth / 2;
+
+      // Sprawdź, czy kulka jest na wysokości przeszkody
+      final bool isAtObstacleHeight = ballY >= obstacleTop - ballRadius && 
+                                      ballY <= obstacleBottom + ballRadius;
+
+      if (isAtObstacleHeight) {
+        // Sprawdź, czy kulka jest poza dziurą
+        final bool isOutsideHole = ballX < holeLeft || ballX > holeRight;
+
+        if (isOutsideHole) {
+          // Odbij kulkę od przeszkody
+          if (ballY < obstacleTop + obstacle.height / 2) {
+            // Odbicie od góry przeszkody
+            ballY = obstacleTop - ballRadius;
+            velocityY = -velocityY * 0.8;
+          } else {
+            // Odbicie od dołu przeszkody
+            ballY = obstacleBottom + ballRadius;
+            velocityY = -velocityY * 0.8;
+          }
+        }
+      }
     }
   }
 }
