@@ -169,6 +169,9 @@ class _MyHomePageState extends State<MyHomePage> {
   /// - Panel danych z akcelerometru
   @override
   Widget build(BuildContext context) {
+    // Upewnij się, że wakelock jest włączony (wywołaj przy każdym build)
+    WakelockPlus.enable();
+    
     // Inicjalizuj fizykę z wymiarami ekranu (tylko raz)
     if (_physics.screenWidth == 0) {
       final screenWidth = MediaQuery.of(context).size.width;
@@ -199,6 +202,20 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        actions: [
+          // Przycisk Reset - resetuje pozycję kulki
+          IconButton(
+            onPressed: _resetBall,
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Reset pozycji kulki',
+          ),
+          // Przycisk Kalibracja - kalibruje akcelerometr
+          IconButton(
+            onPressed: _calibrate,
+            icon: const Icon(Icons.center_focus_strong),
+            tooltip: 'Kalibracja akcelerometru',
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -247,71 +264,6 @@ class _MyHomePageState extends State<MyHomePage> {
           BallWidget(
             x: _physics.ballX,
             y: _physics.ballY,
-          ),
-
-          // === PRZYCISK RESET ===
-          // Metaliczny przycisk w lewym dolnym rogu - resetuje pozycję kulki
-          Positioned(
-            bottom: 20,
-            left: 20,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const RadialGradient(
-                  colors: [
-                    Color(0xFFB8B8B8), // Jasny metaliczny
-                    Color(0xFF888888), // Średni metaliczny
-                    Color(0xFF555555), // Ciemny metaliczny
-                  ],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(2, 2),
-                  ),
-                ],
-              ),
-              child: FloatingActionButton(
-                onPressed: _resetBall,
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                child: const Icon(Icons.refresh, color: Colors.white),
-              ),
-            ),
-          ),
-
-          // === PRZYCISK KALIBRACJA ===
-          // Metaliczny przycisk w prawym dolnym rogu - kalibruje akcelerometr
-          Positioned(
-            bottom: 20,
-            right: 20,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const RadialGradient(
-                  colors: [
-                    Color(0xFFB8B8B8), // Jasny metaliczny
-                    Color(0xFF888888), // Średni metaliczny
-                    Color(0xFF555555), // Ciemny metaliczny
-                  ],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(2, 2),
-                  ),
-                ],
-              ),
-              child: FloatingActionButton(
-                onPressed: _calibrate,
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                child:
-                    const Icon(Icons.center_focus_strong, color: Colors.white),
-              ),
-            ),
           ),
 
           // === PANEL DANYCH ===

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 /// Przeszkoda pozioma z dziurą, przez którą kulka może przejść
 class Obstacle {
   final double x; // lewy górny róg przeszkody
@@ -52,6 +54,7 @@ class GamePhysics {
 
   // === PRZESZKODY ===
   final List<Obstacle> obstacles = [];
+  final Random _random = Random();
 
   /// Inicjalizuje fizykę z wymiarami ekranu
   void initialize(double width, double height, {double bottomPadding = 0}) {
@@ -206,7 +209,11 @@ class GamePhysics {
     for (int i = 0; i < obstacleCount; i++) {
       // Podnieś (przesuń w górę) poziom generowania przeszkód o 50 px
       final double y = 60 + spacing * (i + 1) - 50.0; // Pozycja Y przeszkody
-      final double holeX = 40 + (screenWidth - 80) * (0.3 + (i % 3) * 0.2); // Dziura w różnych miejscach
+      
+      // Losowe położenie dziury w przeszkodzie (z marginesami)
+      final double minHoleX = holeWidth / 2 + 20; // Minimalna pozycja (lewy margines)
+      final double maxHoleX = screenWidth - holeWidth / 2 - 20; // Maksymalna pozycja (prawy margines)
+      final double holeX = minHoleX + _random.nextDouble() * (maxHoleX - minHoleX);
 
       obstacles.add(Obstacle(
         x: 0,

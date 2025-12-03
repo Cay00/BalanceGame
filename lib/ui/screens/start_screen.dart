@@ -75,7 +75,7 @@ class StartScreen extends StatelessWidget {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) =>
-                                const MyHomePage(title: 'Akcelerometr'),
+                                const MyHomePage(title: 'BalanceGame'),
                           ),
                         );
                       },
