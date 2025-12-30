@@ -4,32 +4,36 @@ Balance Game is a mobile arcade game built with Flutter that uses the smartphone
 
 ## Features
 
-Ball control using the device accelerometer (tilt controls)
+- Ball control using the device accelerometer (tilt controls)
 
-Custom physics simulation: gravity, friction, and momentum
+- Custom physics simulation: gravity, friction, and momentum
 
-Collision system with screen edges and static obstacles
+- Collision system with screen edges and static obstacles
 
-Randomly generated targets and obstacles
+- Randomly generated targets and obstacles
 
-Scoring system
+- Scoring system
 
-Sensor calibration (custom “zero level”)
+- Sensor calibration (custom “zero level”)
 
-Start screen, game screen, and settings screen
+- Start screen, game screen, and settings screen
 
-Live data panel (velocity, position, sensor values)
+- Live data panel (velocity, position, sensor values)
+
+## Screen
+
+<img src="screenshots/balance1.jpg" width="300"/>
 
 ## Technologies
 
-Language: Dart (SDK >= 3.9.2)
+- Language: Dart (SDK >= 3.9.2)
 
-Framework: Flutter (Material Design)
+- Framework: Flutter (Material Design)
 
 Libraries:
 
-sensors_plus – accelerometer access
+- sensors_plus – accelerometer access
 
-wakelock_plus – prevents screen from turning off
+- wakelock_plus – prevents screen from turning off
 
-cupertino_icons – iOS-style icons
+- cupertino_icons – iOS-style icons
