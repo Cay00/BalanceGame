@@ -45,10 +45,7 @@ class ObstacleWidget extends StatelessWidget {
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF707070),
-                      Color(0xFF3A3A3A),
-                    ],
+                    colors: [Color(0xFF707070), Color(0xFF3A3A3A)],
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -76,10 +73,7 @@ class ObstacleWidget extends StatelessWidget {
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF707070),
-                      Color(0xFF3A3A3A),
-                    ],
+                    colors: [Color(0xFF707070), Color(0xFF3A3A3A)],
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -97,4 +91,3 @@ class ObstacleWidget extends StatelessWidget {
     );
   }
 }
-
