@@ -21,38 +21,27 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-/// Stan głównej strony gry
-///
 /// Zarządza wszystkimi danymi gry i fizyką kulki
 class _MyHomePageState extends State<MyHomePage> {
-  // === DANE Z AKCELEROMETRU ===
+  // DANE Z AKCELEROMETRU
   double _x = 0.0; // Wartość X akcelerometru (pochylanie w lewo/prawo)
   double _y = 0.0; // Wartość Y akcelerometru (pochylanie w górę/dół)
   double _z = 0.0; // Wartość Z akcelerometru (obrót telefonu)
 
-  // === FIZYKA GRY ===
   late GamePhysics _physics;
 
-  // === DZIURA (CEL) ===
   double _holeX = 0.0;
   double _holeY = 0.0;
   double _holeRadius = 0.0;
   double _bottomPadding = 0.0;
 
-  // === SUBSCRIPTIONS I TIMERY ===
   StreamSubscription<AccelerometerEvent>?
       _accelerometerSubscription; // Pobieranie danych akcelerometru
   Timer? _physicsTimer; // Timer dla pętli fizyki (60 FPS)
   Timer? _levelGenerationTimer; // Timer do generowania nowego poziomu
   final Random _random = Random();
-  bool _isGeneratingNewLevel = false; // Flaga, czy trwa generowanie nowego poziomu
+  bool _isGeneratingNewLevel = false;
 
-  /// Inicjalizacja komponentu
-  ///
-  /// Uruchamia:
-  /// - Pętlę fizyki (60 FPS = co 16ms)
-  /// - Pobieranie danych z akcelerometru
-  /// - Wyłącza wygaszanie ekranu
   @override
   void initState() {
     super.initState();
@@ -63,12 +52,11 @@ class _MyHomePageState extends State<MyHomePage> {
     // Inicjalizuj fizykę gry
     _physics = GamePhysics();
 
-    // Uruchom pętlę fizyki (60 FPS = co 16ms)
     _physicsTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
       _updatePhysics();
     });
 
-    // Pobieraj dane z akcelerometru (nowe API sensors_plus)
+    // dane z API
     _accelerometerSubscription = accelerometerEventStream().listen((
       AccelerometerEvent event,
     ) {
@@ -83,30 +71,25 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Aktualizuje fizykę gry
   void _updatePhysics() {
     if (_isGeneratingNewLevel) {
-      return; // Nie aktualizuj fizyki podczas generowania nowego poziomu
+      return;
     }
 
     _physics.updatePhysics(_x, _y);
 
-    // Aktualizuj wynik tylko jeśli znamy pozycję dziury
     if (_holeRadius > 0) {
       final bool justEnteredHole = _physics.updateScore(_holeX, _holeY, _holeRadius);
       
-      // Jeśli kulka właśnie dotknęła dziury (punkt został dodany)
       if (justEnteredHole && !_isGeneratingNewLevel) {
-        // Uruchom generowanie nowego poziomu po 1 sekundzie
         _handleHoleReached();
       }
     }
 
-    setState(() {}); // Odśwież UI
+    setState(() {});
   }
 
-  /// Obsługuje dotknięcie dziury - generowanie nowego poziomu
   void _handleHoleReached() {
     _isGeneratingNewLevel = true;
 
-    // Po 1 sekundzie wygeneruj nowy poziom
     _levelGenerationTimer?.cancel();
     _levelGenerationTimer = Timer(const Duration(seconds: 1), () {
       _generateNewLevel();
@@ -114,18 +97,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  /// Generuje nowy poziom - nowe przeszkody i nową pozycję dziury
   void _generateNewLevel() {
     final screenWidth = _physics.screenWidth;
     final screenHeight = _physics.screenHeight;
 
-    // Wygeneruj nowe przeszkody
     _physics.generateNewLevel();
 
-    // Wylosuj nową pozycję X dziury
     _holeX = 40.0 + _random.nextDouble() * (screenWidth - 80.0);
 
-    // Pozycja Y dziury pozostaje taka sama (na dole)
     final double bottomSafeMargin = 120.0;
     _holeY = screenHeight - _bottomPadding - bottomSafeMargin - 50.0;
 
@@ -135,66 +114,49 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
-  /// Resetuje pozycję kulki na środek ekranu i zatrzymuje ją
   void _resetBall() {
     _physics.resetBall();
     setState(() {});
   }
 
-  /// Kalibruje akcelerometr - zapisuje aktualne wartości jako "poziom 0"
   void _calibrate() {
     _physics.calibrate(_x, _y);
     setState(() {});
   }
 
-  /// Czyszczenie zasobów przy zamykaniu komponentu
   @override
   void dispose() {
-    // Włącz ponownie wygaszanie ekranu
     WakelockPlus.disable();
-    
+
     _accelerometerSubscription
-        ?.cancel(); // Zatrzymaj pobieranie danych akcelerometru
-    _physicsTimer?.cancel(); // Zatrzymaj pętlę fizyki
-    _levelGenerationTimer?.cancel(); // Zatrzymaj timer generowania poziomu
+        ?.cancel();
+    _physicsTimer?.cancel();
+    _levelGenerationTimer?.cancel();
     super.dispose();
   }
 
-  /// Buduje interfejs użytkownika gry
-  ///
-  /// Zawiera:
-  /// - Kulka
-  /// - Przycisk Reset
-  /// - Przycisk Kalibracja
-  /// - Panel danych z akcelerometru
   @override
   Widget build(BuildContext context) {
-    // Upewnij się, że wakelock jest włączony (wywołaj przy każdym build)
     WakelockPlus.enable();
     
-    // Inicjalizuj fizykę z wymiarami ekranu (tylko raz)
     if (_physics.screenWidth == 0) {
       final screenWidth = MediaQuery.of(context).size.width;
       final screenHeight = MediaQuery.of(context).size.height;
       final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-      _bottomPadding = bottomPadding; // Zapisz padding dla późniejszego użycia
+      _bottomPadding = bottomPadding;
 
       _physics.initialize(
         screenWidth,
         screenHeight,
-        bottomPadding: bottomPadding, // Padding dolnej belki
+        bottomPadding: bottomPadding,
       );
 
-      // Ustal promień dziury
-      _holeRadius = 25.0; // Połowa size = 50.0
+      _holeRadius = 25.0;
 
-      // Wylosuj pozycję X dziury (od lewej do prawej, z marginesami)
-      _holeX = 40.0 + _random.nextDouble() * (screenWidth - 80.0); // marginesy
+      _holeX = 40.0 + _random.nextDouble() * (screenWidth - 80.0);
 
-      // Ustaw dziurę przy dolnej krawędzi ekranu (nad przyciskami i paddingiem),
-      // ale podnieś ją dodatkowo o 50 px w górę
-      final double bottomSafeMargin = 120.0; // miejsce na przyciski i panel
+      final double bottomSafeMargin = 120.0;
       _holeY = screenHeight - bottomPadding - bottomSafeMargin - 50.0;
     }
 
@@ -219,7 +181,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Stack(
         children: [
-          // === WYNIK ===
+          // WYNIK
           Positioned(
             top: 20,
             left: 20,
@@ -241,7 +203,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
 
-          // === PRZESZKODY ===
           for (final obstacle in _physics.obstacles)
             ObstacleWidget(
               x: obstacle.x,
@@ -252,7 +213,6 @@ class _MyHomePageState extends State<MyHomePage> {
               holeWidth: obstacle.holeWidth,
             ),
 
-          // === DZIURA - CEL ===
           HoleWidget(
             x: _holeX,
             y: _holeY,
@@ -260,14 +220,12 @@ class _MyHomePageState extends State<MyHomePage> {
             isActive: true,
           ),
 
-          // === KULKA Z FIZYKĄ ===
           BallWidget(
             x: _physics.ballX,
             y: _physics.ballY,
           ),
 
-          // === PANEL DANYCH ===
-          // Wyświetla dane z akcelerometru i stan kulki
+          // PANEL DANYCH
           DataPanel(
             x: _x,
             y: _y,
